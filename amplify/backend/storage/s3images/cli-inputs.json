@@ -1,0 +1,16 @@
+{
+  "resourceName": "s3images",
+  "policyUUID": "f8157750",
+  "bucketName": "picsbypeter5a3435e8125b45b09d123b4533f08101",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}
