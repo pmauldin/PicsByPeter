@@ -1,5 +1,11 @@
 {
   "AppSyncApiName": "picsbypeter",
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
-  "DynamoDBEnableServerSideEncryption": false
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authpicsbypeter05d11038",
+      "Outputs.UserPoolId"
+    ]
+  }
 }

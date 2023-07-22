@@ -15,11 +15,11 @@
       "auth": {
         "picsbypeter05d11038": {}
       },
-      "api": {
-        "picsbypeter": {}
-      },
       "storage": {
         "s3images": {}
+      },
+      "api": {
+        "picsbypeter": {}
       }
     }
   }

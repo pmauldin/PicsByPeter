@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import "@aws-amplify/ui-react/styles.css";
-import { API, Storage } from "aws-amplify";
+import { Storage } from "aws-amplify";
+import { API, GRAPHQL_AUTH_MODE } from '@aws-amplify/api';
 import {
   Button,
   Flex,
@@ -12,116 +13,111 @@ import {
   View,
   withAuthenticator,
 } from "@aws-amplify/ui-react";
-import { listNotes } from "./graphql/queries";
+import { listPhotos } from "./graphql/queries";
 import {
-  createNote as createNoteMutation,
-  deleteNote as deleteNoteMutation,
+  createPhoto as createPhotoMutation,
+  deletePhoto as deletePhotoMutation,
 } from "./graphql/mutations";
+import { nanoid } from "nanoid";
 
 const App = ({ signOut }) => {
-  const [notes, setNotes] = useState([]);
+  const [photos, setPhotos] = useState([]);
 
   useEffect(() => {
-    fetchNotes();
+    fetchPhotos();
   }, []);
 
-  async function fetchNotes() {
-    const apiData = await API.graphql({ query: listNotes });
-    const notesFromAPI = apiData.data.listNotes.items;
+  async function fetchPhotos() {
+    const apiData = await API.graphql({ query: listPhotos });
+    const photosFromAPI = apiData.data.listPhotos.items;
     await Promise.all(
-      notesFromAPI.map(async (note) => {
-        if (note.image) {
-          const url = await Storage.get(note.name);
-          note.image = url;
-        }
-        return note;
+      photosFromAPI.map(async (photo) => {
+        const url = await Storage.get(photo.name);
+        photo.imageUrl = url;
+        return photo;
       })
     )
-    setNotes(notesFromAPI);
+    setPhotos(photosFromAPI);
   }
 
-  async function createNote(event) {
+  async function createPhoto(event) {
     event.preventDefault();
     const form = new FormData(event.target);
     const image = form.get("image");
-    const data = {
-      name: form.get("name"),
-      description: form.get("description"),
-      image: image.name,
+    if (!image) {
+      console.error("No file selected");
+      return;
     };
-    if (!!data.image) await Storage.put(data.name, image);
-    await API.graphql({
-      query: createNoteMutation,
-      variables: { input: data },
+
+    const uid = nanoid(10);
+    const filename = `${uid}-${image.name}`;
+
+    const data = {
+      name: filename
+    };
+    
+    await Storage.put(filename, image, {
+      contentType: image.type,
     });
-    fetchNotes();
+
+    await API.graphql({
+      query: createPhotoMutation,
+      variables: { input: data },
+      authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS
+    });
+    fetchPhotos();
     event.target.reset();
   }
 
-  async function deleteNote({ id, name }) {
-    const newNotes = notes.filter((note) => note.id !== id);
-    setNotes(newNotes);
+  async function deletePhoto({ id, name }) {
+    const newPhotos = photos.filter((photo) => photo.id !== id);
+    setPhotos(newPhotos);
     await Storage.remove(name);
     await API.graphql({
-      query: deleteNoteMutation,
+      query: deletePhotoMutation,
       variables: { input: { id } },
     });
   }
 
   return (
     <View className="App">
-      <Heading level={1}>My Notes App</Heading>
-      <View as="form" margin="3rem 0" onSubmit={createNote}>
+      <Heading level={1}>Photography</Heading>
+      <View as="form" margin="3rem 0" onSubmit={createPhoto}>
         <Flex direction="row" justifyContent="center">
-          <TextField
-            name="name"
-            placeholder="Note Name"
-            label="Note Name"
-            labelHidden
-            variation="quiet"
-            required
-          />
-          <TextField
-            name="description"
-            placeholder="Note Description"
-            label="Note Description"
-            labelHidden
-            variation="quiet"
-            required
-          />
           <View
             name="image"
             as="input"
             type="file"
             style={{ alignSelf: "end" }}
+            required
           />
           <Button type="submit" variation="primary">
-            Create Note
+            Upload Photo
           </Button>
         </Flex>
       </View>
-      <Heading level={2}>Current Notes</Heading>
+      <Heading level={2}>Photos</Heading>
       <View margin="3rem 0">
-        {notes.map((note) => (
+        {photos.map((photo) => (
           <Flex
-            key={note.id || note.name}
+            key={photo.id || photo.name}
             direction="row"
             justifyContent="center"
             alignItems="center"
           >
             <Text as="strong" fontWeight={700}>
-              {note.name}
+              {photo.name}
             </Text>
-            <Text as="span">{note.description}</Text>
-            {note.image && (
+            <Text as="span">{photo.description}</Text>
+            {photo.imageUrl && (
               <Image
-                src={note.image}
-                alt={`visual aid for ${notes.name}`}
+                src={photo.imageUrl}
+                alt={`visual aid for ${photos.name}`}
                 style={{ width: 400 }}
               />
             )}
-            <Button variation="link" onClick={() => deleteNote(note)}>
-              Delete note
+            <Button variation="link" onClick={() => deletePhoto(photo)}>
+              Delete photo
             </Button>
           </Flex>
         ))}
