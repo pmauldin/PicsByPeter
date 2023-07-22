@@ -7,8 +7,8 @@ export const onCreatePhoto = /* GraphQL */ `
     $owner: String
   ) {
     onCreatePhoto(filter: $filter, owner: $owner) {
-      name
       id
+      name
       createdAt
       updatedAt
       owner
@@ -22,8 +22,8 @@ export const onUpdatePhoto = /* GraphQL */ `
     $owner: String
   ) {
     onUpdatePhoto(filter: $filter, owner: $owner) {
-      name
       id
+      name
       createdAt
       updatedAt
       owner
@@ -37,8 +37,8 @@ export const onDeletePhoto = /* GraphQL */ `
     $owner: String
   ) {
     onDeletePhoto(filter: $filter, owner: $owner) {
-      name
       id
+      name
       createdAt
       updatedAt
       owner

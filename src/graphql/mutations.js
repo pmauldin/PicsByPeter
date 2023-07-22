@@ -7,8 +7,8 @@ export const createPhoto = /* GraphQL */ `
     $condition: ModelPhotoConditionInput
   ) {
     createPhoto(input: $input, condition: $condition) {
-      name
       id
+      name
       createdAt
       updatedAt
       owner
@@ -22,8 +22,8 @@ export const updatePhoto = /* GraphQL */ `
     $condition: ModelPhotoConditionInput
   ) {
     updatePhoto(input: $input, condition: $condition) {
-      name
       id
+      name
       createdAt
       updatedAt
       owner
@@ -37,8 +37,8 @@ export const deletePhoto = /* GraphQL */ `
     $condition: ModelPhotoConditionInput
   ) {
     deletePhoto(input: $input, condition: $condition) {
-      name
       id
+      name
       createdAt
       updatedAt
       owner

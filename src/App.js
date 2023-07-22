@@ -40,20 +40,28 @@ const App = ({ signOut }) => {
     setPhotos(photosFromAPI);
   }
 
-  async function createPhoto(event) {
+  async function createPhotos(event) {
     event.preventDefault();
     const form = new FormData(event.target);
-    const image = form.get("image");
-    if (!image) {
-      console.error("No file selected");
+    const images = form.getAll("images");
+    if (!images || images.length === 0) {
+      console.error("No file(s) selected");
       return;
     };
 
+    await Promise.all(images.map(createPhoto));
+
+    fetchPhotos();
+    event.target.reset();
+  }
+
+  async function createPhoto(image) {
     const uid = nanoid(10);
     const filename = `${uid}-${image.name}`;
 
     const data = {
       name: filename
+      // TODO extract photo metadata
     };
     
     await Storage.put(filename, image, {
@@ -65,8 +73,6 @@ const App = ({ signOut }) => {
       variables: { input: data },
       authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS
     });
-    fetchPhotos();
-    event.target.reset();
   }
 
   async function deletePhoto({ id, name }) {
@@ -76,19 +82,21 @@ const App = ({ signOut }) => {
     await API.graphql({
       query: deletePhotoMutation,
       variables: { input: { id } },
+      authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS
     });
   }
 
   return (
     <View className="App">
       <Heading level={1}>Photography</Heading>
-      <View as="form" margin="3rem 0" onSubmit={createPhoto}>
+      <View as="form" margin="3rem 0" onSubmit={createPhotos}>
         <Flex direction="row" justifyContent="center">
           <View
-            name="image"
+            name="images"
             as="input"
             type="file"
             style={{ alignSelf: "end" }}
+            multiple
             required
           />
           <Button type="submit" variation="primary">

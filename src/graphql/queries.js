@@ -4,8 +4,8 @@
 export const getPhoto = /* GraphQL */ `
   query GetPhoto($id: ID!) {
     getPhoto(id: $id) {
-      name
       id
+      name
       createdAt
       updatedAt
       owner
@@ -21,8 +21,8 @@ export const listPhotos = /* GraphQL */ `
   ) {
     listPhotos(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
-        name
         id
+        name
         createdAt
         updatedAt
         owner
